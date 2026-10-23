@@ -1,0 +1,78 @@
+name: update
+
+on:
+  schedule:
+    - cron: "17 */3 * * *"
+  workflow_dispatch:
+  repository_dispatch:
+    types: [pandacode-release]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Read latest release
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="$(gh api repos/aicodeking/pandacode/releases/latest --jq .tag_name)"
+          if ! printf '%s' "$tag" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::Unexpected release tag"
+            exit 1
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Update cask and formula
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          set -euo pipefail
+          dir="$(mktemp -d)"
+          gh release download "$TAG" --repo aicodeking/pandacode --dir "$dir" \
+            -p 'PandaCode-macOS-arm64.dmg.sha256' -p 'PandaCode-macOS-x64.dmg.sha256' \
+            -p 'PandaCode-Linux-x86_64.AppImage.sha256' -p 'PandaCode-Linux-aarch64.AppImage.sha256'
+          sum() {
+            local value
+            value="$(cut -d ' ' -f 1 "$dir/$1.sha256")"
+            if ! printf '%s' "$value" | grep -Eq '^[0-9a-f]{64}$'; then
+              echo "::error::Bad checksum in $1.sha256" >&2
+              exit 1
+            fi
+            printf '%s' "$value"
+          }
+          VERSION="${TAG#v}"
+          MAC_ARM="$(sum PandaCode-macOS-arm64.dmg)"
+          MAC_X64="$(sum PandaCode-macOS-x64.dmg)"
+          LINUX_X64="$(sum PandaCode-Linux-x86_64.AppImage)"
+          LINUX_ARM="$(sum PandaCode-Linux-aarch64.AppImage)"
+          export VERSION MAC_ARM MAC_X64 LINUX_X64 LINUX_ARM
+          perl -0pi -e '
+            s/(\n  version ")[^"]+/$1$ENV{VERSION}/;
+            s/(arm:\s+")[0-9a-f]{64}/$1$ENV{MAC_ARM}/;
+            s/(intel:\s+")[0-9a-f]{64}/$1$ENV{MAC_X64}/;
+          ' Casks/pandacode.rb
+          perl -0pi -e '
+            s/(\n  version ")[^"]+/$1$ENV{VERSION}/;
+            s/(x86_64\.AppImage"\n\s+sha256 ")[0-9a-f]{64}/$1$ENV{LINUX_X64}/;
+            s/(aarch64\.AppImage"\n\s+sha256 ")[0-9a-f]{64}/$1$ENV{LINUX_ARM}/;
+          ' Formula/pandacode.rb
+          if git diff --quiet; then
+            echo "Already at $VERSION"
+            exit 0
+          fi
+          git diff
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "pandacode $VERSION"
+          git push
