@@ -63,7 +63,7 @@ jobs:
             s/(intel:\s+")[0-9a-f]{64}/$1$ENV{MAC_X64}/;
           ' Casks/pandacode.rb
           perl -0pi -e '
-            s/(\n  version ")[^"]+/$1$ENV{VERSION}/;
+            s{/download/v[0-9.]+/}{/download/v$ENV{VERSION}/}g;
             s/(x86_64\.AppImage"\n\s+sha256 ")[0-9a-f]{64}/$1$ENV{LINUX_X64}/;
             s/(aarch64\.AppImage"\n\s+sha256 ")[0-9a-f]{64}/$1$ENV{LINUX_ARM}/;
           ' Formula/pandacode.rb
