@@ -1,8 +1,8 @@
 class Pandacode < Formula
   desc "Desktop workspace for coding agents"
   homepage "https://github.com/aicodeking/pandacode"
-  url "https://github.com/aicodeking/pandacode/releases/download/v0.3.43/PandaCode-Linux-x86_64.AppImage"
-  sha256 "7dd9f44de6bbf8f22e03b7597f6b9300156d5394ebbb60ac4a1f0fe3a6fed8cf"
+  url "https://github.com/aicodeking/pandacode/releases/download/v0.3.47/PandaCode-Linux-x86_64.AppImage"
+  sha256 "1d4c03804c10abb4d978df6bce4b11660af810fe2bb15954313bc710267b6578"
   license :cannot_represent
 
   livecheck do
@@ -14,8 +14,8 @@ class Pandacode < Formula
 
   on_linux do
     on_arm do
-      url "https://github.com/aicodeking/pandacode/releases/download/v0.3.43/PandaCode-Linux-aarch64.AppImage"
-      sha256 "9a28a9115540d779bb4b74e566bfa02189b3e4a08dbc74e47ebfa4173378ed77"
+      url "https://github.com/aicodeking/pandacode/releases/download/v0.3.47/PandaCode-Linux-aarch64.AppImage"
+      sha256 "2484e9b606d502e2a5a0b05015b2295149da1044bf777fadbddd417ec6bf5548"
     end
   end
 
