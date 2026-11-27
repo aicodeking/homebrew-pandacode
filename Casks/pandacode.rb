@@ -1,9 +1,9 @@
 cask "pandacode" do
   arch arm: "arm64", intel: "x64"
 
-  version "0.3.157"
-  sha256 arm:   "0a970f94f685051acca5394186b85d1efed47af9d723b903c7fc7bb9d399d90d",
-         intel: "21629b1c0b1ca213f0163fc1cfbbbad2a6df45c17a7c96ab262cceee796bff2c"
+  version "0.3.161"
+  sha256 arm:   "93a0d493536892d57f919bdd3948d9b0a54141c059951dcc271524d4655ab34c",
+         intel: "67e7e7435d9ea858ab6ebb80bfdd66796f490aa82db3a00019c90e58c7ccab86"
 
   url "https://github.com/aicodeking/pandacode/releases/download/v#{version}/PandaCode-macOS-#{arch}.dmg"
   name "PandaCode"
